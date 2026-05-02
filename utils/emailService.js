@@ -1,8 +1,6 @@
-const brevo = require('@getbrevo/brevo');
+const axios = require('axios');
 
-const apiInstance = new brevo.TransactionalEmailsApi();
-let apiKey = apiInstance.authentications['apiKey'];
-apiKey.apiKey = process.env.BREVO_API_KEY;
+const BREVO_API_URL = 'https://api.brevo.com/v3/smtp/email';
 
 const formatQuantity = (quantity, unit) => {
   if (unit === 'kg') {
@@ -12,6 +10,16 @@ const formatQuantity = (quantity, unit) => {
   if (unit === 'piece') return quantity === 1 ? '1 piece' : `${quantity} pieces`;
   if (unit === 'bundle') return quantity === 1 ? '1 bundle' : `${quantity} bundles`;
   return `${quantity} ${unit}`;
+};
+
+const sendBrevoEmail = async (emailData) => {
+  return axios.post(BREVO_API_URL, emailData, {
+    headers: {
+      'accept': 'application/json',
+      'api-key': process.env.BREVO_API_KEY,
+      'content-type': 'application/json'
+    }
+  });
 };
 
 const sendOrderEmailToOwner = async (order) => {
@@ -59,17 +67,16 @@ const sendOrderEmailToOwner = async (order) => {
       </div>
     `;
 
-    const sendSmtpEmail = {
-      subject: `🥬 New Order #${order.orderId} - ${order.customer.name}`,
-      htmlContent: htmlContent,
+    await sendBrevoEmail({
       sender: { name: 'Madhu Vegetables', email: process.env.EMAIL_USER },
-      to: [{ email: process.env.OWNER_EMAIL, name: 'Madhu Vegetables Owner' }]
-    };
+      to: [{ email: process.env.OWNER_EMAIL, name: 'Madhu Vegetables Owner' }],
+      subject: `🥬 New Order #${order.orderId} - ${order.customer.name}`,
+      htmlContent: htmlContent
+    });
 
-    await apiInstance.sendTransacEmail(sendSmtpEmail);
     console.log('✅ Order email sent to owner');
   } catch (error) {
-    console.error('Email sending error:', error.message || error);
+    console.error('Email sending error:', error.response?.data || error.message);
   }
 };
 
@@ -95,17 +102,16 @@ const sendOrderConfirmationToCustomer = async (order, customerEmail) => {
       </div>
     `;
 
-    const sendSmtpEmail = {
-      subject: `Order Confirmation - Madhu Vegetables #${order.orderId}`,
-      htmlContent: htmlContent,
+    await sendBrevoEmail({
       sender: { name: 'Madhu Vegetables', email: process.env.EMAIL_USER },
-      to: [{ email: customerEmail, name: order.customer.name }]
-    };
+      to: [{ email: customerEmail, name: order.customer.name }],
+      subject: `Order Confirmation - Madhu Vegetables #${order.orderId}`,
+      htmlContent: htmlContent
+    });
 
-    await apiInstance.sendTransacEmail(sendSmtpEmail);
     console.log('✅ Customer confirmation email sent');
   } catch (error) {
-    console.error('Customer email error:', error.message || error);
+    console.error('Customer email error:', error.response?.data || error.message);
   }
 };
 
