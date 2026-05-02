@@ -1,7 +1,8 @@
 const brevo = require('@getbrevo/brevo');
 
 const apiInstance = new brevo.TransactionalEmailsApi();
-apiInstance.setApiKey(brevo.TransactionalEmailsApiApiKeys.apiKey, process.env.BREVO_API_KEY);
+let apiKey = apiInstance.authentications['apiKey'];
+apiKey.apiKey = process.env.BREVO_API_KEY;
 
 const formatQuantity = (quantity, unit) => {
   if (unit === 'kg') {
@@ -58,11 +59,12 @@ const sendOrderEmailToOwner = async (order) => {
       </div>
     `;
 
-    const sendSmtpEmail = new brevo.SendSmtpEmail();
-    sendSmtpEmail.subject = `🥬 New Order #${order.orderId} - ${order.customer.name}`;
-    sendSmtpEmail.htmlContent = htmlContent;
-    sendSmtpEmail.sender = { name: 'Madhu Vegetables', email: process.env.EMAIL_USER };
-    sendSmtpEmail.to = [{ email: process.env.OWNER_EMAIL, name: 'Madhu Vegetables Owner' }];
+    const sendSmtpEmail = {
+      subject: `🥬 New Order #${order.orderId} - ${order.customer.name}`,
+      htmlContent: htmlContent,
+      sender: { name: 'Madhu Vegetables', email: process.env.EMAIL_USER },
+      to: [{ email: process.env.OWNER_EMAIL, name: 'Madhu Vegetables Owner' }]
+    };
 
     await apiInstance.sendTransacEmail(sendSmtpEmail);
     console.log('✅ Order email sent to owner');
@@ -93,11 +95,12 @@ const sendOrderConfirmationToCustomer = async (order, customerEmail) => {
       </div>
     `;
 
-    const sendSmtpEmail = new brevo.SendSmtpEmail();
-    sendSmtpEmail.subject = `Order Confirmation - Madhu Vegetables #${order.orderId}`;
-    sendSmtpEmail.htmlContent = htmlContent;
-    sendSmtpEmail.sender = { name: 'Madhu Vegetables', email: process.env.EMAIL_USER };
-    sendSmtpEmail.to = [{ email: customerEmail, name: order.customer.name }];
+    const sendSmtpEmail = {
+      subject: `Order Confirmation - Madhu Vegetables #${order.orderId}`,
+      htmlContent: htmlContent,
+      sender: { name: 'Madhu Vegetables', email: process.env.EMAIL_USER },
+      to: [{ email: customerEmail, name: order.customer.name }]
+    };
 
     await apiInstance.sendTransacEmail(sendSmtpEmail);
     console.log('✅ Customer confirmation email sent');
