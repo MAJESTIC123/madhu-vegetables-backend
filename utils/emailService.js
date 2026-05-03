@@ -97,7 +97,7 @@ const sendOrderConfirmationToCustomer = async (order, customerEmail) => {
         <h3>Items:</h3>
         <ul>${itemsList}</ul>
         <p><strong>Total: ₹${order.totalAmount}</strong> (Cash on Delivery)</p>
-        <p>For any queries, contact: 9976988285</p>
+        <p>For any queries, contact: 9486725221</p>
         <p>Thank you,<br/>Madhu Vegetables</p>
       </div>
     `;
